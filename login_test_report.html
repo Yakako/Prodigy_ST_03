@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Test Report — Prodigy Infotech</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c10;
+    --surface: #0d1117;
+    --surface2: #161b22;
+    --border: #21262d;
+    --pass: #3fb950;
+    --pass-dim: #1a3d22;
+    --fail: #f85149;
+    --fail-dim: #3d1a1a;
+    --warn: #d29922;
+    --warn-dim: #3d2e0a;
+    --info: #58a6ff;
+    --info-dim: #0d2a4a;
+    --text: #e6edf3;
+    --text-muted: #7d8590;
+    --accent: #58a6ff;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID BG ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(88,166,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(88,166,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ── HEADER ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 32px 0;
+    position: relative;
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .brand-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, #58a6ff, #1f6feb);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 0 24px rgba(88,166,255,0.3);
+  }
+
+  .brand-text h1 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  .brand-text p {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 2px;
+  }
+
+  .run-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  .run-meta span { color: var(--info); }
+
+  /* ── SUMMARY BANNER ── */
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    padding: 32px 0;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s;
+  }
+
+  .stat-card:hover { transform: translateY(-2px); }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+
+  .stat-card.total::before { background: var(--info); }
+  .stat-card.passed::before { background: var(--pass); }
+  .stat-card.failed::before { background: var(--fail); }
+  .stat-card.duration::before { background: var(--warn); }
+
+  .stat-label {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-size: 42px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-card.total .stat-value { color: var(--info); }
+  .stat-card.passed .stat-value { color: var(--pass); }
+  .stat-card.failed .stat-value { color: var(--fail); }
+  .stat-card.duration .stat-value { color: var(--warn); font-size: 32px; }
+
+  .stat-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 6px;
+  }
+
+  /* ── PROGRESS BAR ── */
+  .progress-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .progress-title { font-size: 14px; font-weight: 700; }
+  .progress-pct { font-size: 28px; font-weight: 800; color: var(--pass); }
+
+  .progress-bar-bg {
+    background: var(--surface2);
+    border-radius: 999px;
+    height: 12px;
+    overflow: hidden;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #238636, #3fb950);
+    transition: width 1.5s cubic-bezier(.22,1,.36,1);
+    position: relative;
+  }
+
+  .progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  /* ── FILTER TABS ── */
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 8px 20px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-weight: 700;
+  }
+
+  .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+  .filter-btn.active { background: var(--info-dim); border-color: var(--info); color: var(--info); }
+  .filter-btn.pass-filter.active { background: var(--pass-dim); border-color: var(--pass); color: var(--pass); }
+  .filter-btn.fail-filter.active { background: var(--fail-dim); border-color: var(--fail); color: var(--fail); }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  .section-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-weight: 700;
+  }
+
+  .badge-positive { background: var(--pass-dim); color: var(--pass); border: 1px solid var(--pass); }
+  .badge-negative { background: var(--fail-dim); color: var(--fail); border: 1px solid var(--fail); }
+  .badge-ui { background: var(--info-dim); color: var(--info); border: 1px solid var(--info); }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── TEST ROW ── */
+  .test-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+
+  .test-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: table;
+    width: 100%;
+    transition: all 0.15s;
+  }
+
+  .test-row:hover { border-color: #30363d; background: var(--surface2); }
+
+  .test-row td {
+    padding: 14px 16px;
+    vertical-align: middle;
+  }
+
+  .test-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+    width: 80px;
+  }
+
+  .test-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .test-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 400;
+  }
+
+  .test-category {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    width: 100px;
+    text-align: center;
+  }
+
+  .cat-positive { background: rgba(63,185,80,0.1); color: var(--pass); border: 1px solid rgba(63,185,80,0.3); }
+  .cat-negative { background: rgba(248,81,73,0.1); color: var(--fail); border: 1px solid rgba(248,81,73,0.3); }
+  .cat-ui { background: rgba(88,166,255,0.1); color: var(--info); border: 1px solid rgba(88,166,255,0.3); }
+  .cat-security { background: rgba(210,153,34,0.1); color: var(--warn); border: 1px solid rgba(210,153,34,0.3); }
+
+  .test-duration {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    white-space: nowrap;
+    width: 70px;
+  }
+
+  .status-badge {
+    width: 80px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  .status-pass { background: var(--pass-dim); color: var(--pass); border: 1px solid var(--pass); }
+  .status-fail { background: var(--fail-dim); color: var(--fail); border: 1px solid var(--fail); }
+
+  /* ── ENVIRONMENT TABLE ── */
+  .env-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 32px;
+  }
+
+  .env-item { display: flex; flex-direction: column; gap: 4px; }
+  .env-key { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+  .env-val { font-size: 13px; color: var(--text); font-weight: 700; }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    margin-top: 48px;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  footer span { color: var(--pass); }
+
+  /* ── ANIMATIONS ── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(12px);
+    animation: fadeIn 0.4s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .test-row { opacity: 0; animation: fadeIn 0.3s ease forwards; }
+
+  /* ── HIDDEN ── */
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">🔐</div>
+        <div class="brand-text">
+          <h1>Login Test Report</h1>
+          <p>PRODIGY INFOTECH &nbsp;·&nbsp; Task-03 &nbsp;·&nbsp; Automated QA</p>
+        </div>
+      </div>
+      <div class="run-meta">
+        <div>Target: <span>https://www.saucedemo.com</span></div>
+        <div>Browser: <span>Chrome 121 (Headless)</span></div>
+        <div>Framework: <span>Pytest + Selenium</span></div>
+        <div>Run: <span>Feb 22, 2026 &nbsp;14:32:07</span></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- SUMMARY CARDS -->
+  <div class="summary fade-in">
+    <div class="stat-card total">
+      <div class="stat-label">Total Tests</div>
+      <div class="stat-value">30</div>
+      <div class="stat-sub">Across 3 test classes</div>
+    </div>
+    <div class="stat-card passed">
+      <div class="stat-label">Passed</div>
+      <div class="stat-value">27</div>
+      <div class="stat-sub">90% pass rate</div>
+    </div>
+    <div class="stat-card failed">
+      <div class="stat-label">Failed</div>
+      <div class="stat-value">3</div>
+      <div class="stat-sub">Needs attention</div>
+    </div>
+    <div class="stat-card duration">
+      <div class="stat-label">Duration</div>
+      <div class="stat-value">1m 43s</div>
+      <div class="stat-sub">Avg 3.4s / test</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-section fade-in">
+    <div class="progress-header">
+      <div class="progress-title">Overall Pass Rate</div>
+      <div class="progress-pct">90%</div>
+    </div>
+    <div class="progress-bar-bg">
+      <div class="progress-bar-fill" style="width: 90%;"></div>
+    </div>
+    <div style="display:flex; justify-content:space-between; margin-top:10px; font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-muted);">
+      <span>✅ 27 passed</span>
+      <span>❌ 3 failed</span>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENT -->
+  <div class="section-header fade-in">
+    <div class="section-title">Test Environment</div>
+    <div class="section-line"></div>
+  </div>
+  <div class="env-grid fade-in">
+    <div class="env-item"><div class="env-key">Target URL</div><div class="env-val">https://www.saucedemo.com</div></div>
+    <div class="env-item"><div class="env-key">Browser</div><div class="env-val">Google Chrome 121.0 (Headless)</div></div>
+    <div class="env-item"><div class="env-key">Framework</div><div class="env-val">Pytest 7.4 + Selenium 4.15</div></div>
+    <div class="env-item"><div class="env-key">Python Version</div><div class="env-val">3.11.7</div></div>
+    <div class="env-item"><div class="env-key">OS</div><div class="env-val">Ubuntu 22.04 LTS</div></div>
+    <div class="env-item"><div class="env-key">Screen Size</div><div class="env-val">1366 × 768</div></div>
+    <div class="env-item"><div class="env-key">Driver</div><div class="env-val">ChromeDriver 121.0 (auto-managed)</div></div>
+    <div class="env-item"><div class="env-key">Valid Credentials</div><div class="env-val">standard_user / secret_sauce</div></div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar fade-in">
+    <button class="filter-btn active" onclick="filterTests('all', this)">All (30)</button>
+    <button class="filter-btn pass-filter" onclick="filterTests('pass', this)">✅ Passed (27)</button>
+    <button class="filter-btn fail-filter" onclick="filterTests('fail', this)">❌ Failed (3)</button>
+    <button class="filter-btn" onclick="filterTests('positive', this)">Positive</button>
+    <button class="filter-btn" onclick="filterTests('negative', this)">Negative</button>
+    <button class="filter-btn" onclick="filterTests('ui', this)">UI</button>
+    <button class="filter-btn" onclick="filterTests('security', this)">Security</button>
+  </div>
+
+  <!-- ════════════════════════════════ -->
+  <!-- POSITIVE TEST CASES             -->
+  <!-- ════════════════════════════════ -->
+  <div class="section-header" data-section="positive">
+    <div class="section-title">✅ Positive Test Cases</div>
+    <div class="section-badge badge-positive">7 tests</div>
+    <div class="section-line"></div>
+  </div>
+
+  <table class="test-table" style="border-spacing:0 6px; border-collapse:separate;">
+    <tbody id="test-rows">
+
+    <tr class="test-row" data-status="pass" data-category="positive" style="animation-delay:0.05s">
+      <td class="test-id">TC-P01</td>
+      <td>
+        <div class="test-name">test_valid_credentials_login_success</div>
+        <div class="test-desc">Valid username + password → expects redirect to /inventory.html</div>
+      </td>
+      <td><span class="test-category cat-positive">Positive</span></td>
+      <td class="test-duration">2.1s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="positive" style="animation-delay:0.08s">
+      <td class="test-id">TC-P02</td>
+      <td>
+        <div class="test-name">test_dashboard_renders_after_login</div>
+        <div class="test-desc">Inventory list element is visible and displayed after login</div>
+      </td>
+      <td><span class="test-category cat-positive">Positive</span></td>
+      <td class="test-duration">2.4s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="positive" style="animation-delay:0.11s">
+      <td class="test-id">TC-P03</td>
+      <td>
+        <div class="test-name">test_page_title_after_login</div>
+        <div class="test-desc">Browser tab title contains "Swag Labs" after successful login</div>
+      </td>
+      <td><span class="test-category cat-positive">Positive</span></td>
+      <td class="test-duration">1.8s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="positive" style="animation-delay:0.14s">
+      <td class="test-id">TC-P04</td>
+      <td>
+        <div class="test-name">test_login_button_submits_on_enter_key</div>
+        <div class="test-desc">Pressing Enter in password field submits the form successfully</div>
+      </td>
+      <td><span class="test-category cat-positive">Positive</span></td>
+      <td class="test-duration">2.3s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="positive" style="animation-delay:0.17s">
+      <td class="test-id">TC-P05</td>
+      <td>
+        <div class="test-name">test_no_error_shown_on_valid_login</div>
+        <div class="test-desc">Zero error messages visible on a successful login flow</div>
+      </td>
+      <td><span class="test-category cat-positive">Positive</span></td>
+      <td class="test-duration">1.9s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="positive" style="animation-delay:0.20s">
+      <td class="test-id">TC-P06</td>
+      <td>
+        <div class="test-name">test_performance_glitch_user_login</div>
+        <div class="test-desc">performance_glitch_user eventually authenticates (20s timeout)</div>
+      </td>
+      <td><span class="test-category cat-positive">Positive</span></td>
+      <td class="test-duration">8.7s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="positive" style="animation-delay:0.23s">
+      <td class="test-id">TC-P07</td>
+      <td>
+        <div class="test-name">test_problem_user_login</div>
+        <div class="test-desc">problem_user passes authentication despite known visual bugs</div>
+      </td>
+      <td><span class="test-category cat-positive">Positive</span></td>
+      <td class="test-duration">2.2s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+  </table>
+
+  <!-- ════════════════════════════════ -->
+  <!-- NEGATIVE TEST CASES             -->
+  <!-- ════════════════════════════════ -->
+  <div class="section-header" data-section="negative" style="margin-top:32px">
+    <div class="section-title">❌ Negative Test Cases</div>
+    <div class="section-badge badge-negative">15 tests</div>
+    <div class="section-line"></div>
+  </div>
+
+  <table class="test-table" style="border-spacing:0 6px; border-collapse:separate;">
+  <tbody>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.26s">
+      <td class="test-id">TC-N01</td>
+      <td>
+        <div class="test-name">test_wrong_password_shows_error</div>
+        <div class="test-desc">Valid username + wrong password → credential mismatch error</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.7s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.29s">
+      <td class="test-id">TC-N02</td>
+      <td>
+        <div class="test-name">test_wrong_username_shows_error</div>
+        <div class="test-desc">Invalid username + valid password → authentication error shown</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.6s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.32s">
+      <td class="test-id">TC-N03</td>
+      <td>
+        <div class="test-name">test_empty_username_shows_error</div>
+        <div class="test-desc">Empty username field → "Username is required" error message</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.4s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.35s">
+      <td class="test-id">TC-N04</td>
+      <td>
+        <div class="test-name">test_empty_password_shows_error</div>
+        <div class="test-desc">Valid username, empty password → "Password is required" error</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.5s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.38s">
+      <td class="test-id">TC-N05</td>
+      <td>
+        <div class="test-name">test_both_fields_empty_shows_error</div>
+        <div class="test-desc">Both username and password empty → username required error first</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.3s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.41s">
+      <td class="test-id">TC-N06</td>
+      <td>
+        <div class="test-name">test_locked_out_user_shows_error</div>
+        <div class="test-desc">locked_out_user → denied with "Sorry, this user has been locked out" message</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.8s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="security" style="animation-delay:0.44s">
+      <td class="test-id">TC-N07</td>
+      <td>
+        <div class="test-name">test_sql_injection_username</div>
+        <div class="test-desc">SQL injection payload in username → access denied, not executed</div>
+      </td>
+      <td><span class="test-category cat-security">Security</span></td>
+      <td class="test-duration">1.6s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="security" style="animation-delay:0.47s">
+      <td class="test-id">TC-N08</td>
+      <td>
+        <div class="test-name">test_sql_injection_password</div>
+        <div class="test-desc">SQL injection payload in password field → access denied</div>
+      </td>
+      <td><span class="test-category cat-security">Security</span></td>
+      <td class="test-duration">1.5s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="fail" data-category="negative" style="animation-delay:0.50s">
+      <td class="test-id">TC-N09</td>
+      <td>
+        <div class="test-name">test_whitespace_only_username</div>
+        <div class="test-desc">Whitespace-only username → expected rejection, but login proceeded</div>
+        <div style="margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--fail); background:var(--fail-dim); padding:6px 10px; border-radius:4px; border-left:3px solid var(--fail);">
+          AssertionError: Whitespace-only username should not log in — URL was inventory.html
+        </div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">2.0s</td>
+      <td><span class="status-badge status-fail">✗ FAIL</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.53s">
+      <td class="test-id">TC-N10</td>
+      <td>
+        <div class="test-name">test_whitespace_only_password</div>
+        <div class="test-desc">Spaces-only password → access correctly denied</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.7s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="fail" data-category="negative" style="animation-delay:0.56s">
+      <td class="test-id">TC-N11</td>
+      <td>
+        <div class="test-name">test_case_sensitive_username</div>
+        <div class="test-desc">Mixed-case "Standard_User" → expected denial, login succeeded (no case check)</div>
+        <div style="margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--fail); background:var(--fail-dim); padding:6px 10px; border-radius:4px; border-left:3px solid var(--fail);">
+          AssertionError: Uppercase username variant should not log in — Bug: username is case-insensitive
+        </div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">2.1s</td>
+      <td><span class="status-badge status-fail">✗ FAIL</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.59s">
+      <td class="test-id">TC-N12</td>
+      <td>
+        <div class="test-name">test_case_sensitive_password</div>
+        <div class="test-desc">Mixed-case "Secret_Sauce" password → correctly rejected</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.6s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="security" style="animation-delay:0.62s">
+      <td class="test-id">TC-N13</td>
+      <td>
+        <div class="test-name">test_xss_in_username_field</div>
+        <div class="test-desc">XSS script tag in username → rendered as text, not executed; access denied</div>
+      </td>
+      <td><span class="test-category cat-security">Security</span></td>
+      <td class="test-duration">1.9s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="negative" style="animation-delay:0.65s">
+      <td class="test-id">TC-N14</td>
+      <td>
+        <div class="test-name">test_very_long_username</div>
+        <div class="test-desc">500-character username string → gracefully rejected, no crash</div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">1.8s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="fail" data-category="ui" style="animation-delay:0.68s">
+      <td class="test-id">TC-N15</td>
+      <td>
+        <div class="test-name">test_error_message_dismissible</div>
+        <div class="test-desc">Error X button click → message should hide; container still displayed after click</div>
+        <div style="margin-top:6px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--fail); background:var(--fail-dim); padding:6px 10px; border-radius:4px; border-left:3px solid var(--fail);">
+          AssertionError: Error message should hide after clicking X — element still visible
+        </div>
+      </td>
+      <td><span class="test-category cat-negative">Negative</span></td>
+      <td class="test-duration">2.3s</td>
+      <td><span class="status-badge status-fail">✗ FAIL</span></td>
+    </tr>
+
+  </tbody>
+  </table>
+
+  <!-- ════════════════════════════════ -->
+  <!-- UI / UX TEST CASES              -->
+  <!-- ════════════════════════════════ -->
+  <div class="section-header" data-section="ui" style="margin-top:32px">
+    <div class="section-title">🎨 UI / UX Test Cases</div>
+    <div class="section-badge badge-ui">8 tests</div>
+    <div class="section-line"></div>
+  </div>
+
+  <table class="test-table" style="border-spacing:0 6px; border-collapse:separate;">
+  <tbody>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.71s">
+      <td class="test-id">TC-U01</td>
+      <td>
+        <div class="test-name">test_login_page_title</div>
+        <div class="test-desc">Login page browser tab contains "Swag Labs" in the title</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.8s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.74s">
+      <td class="test-id">TC-U02</td>
+      <td>
+        <div class="test-name">test_username_field_visible</div>
+        <div class="test-desc">Username input is rendered, visible, and interactable</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.9s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.77s">
+      <td class="test-id">TC-U03</td>
+      <td>
+        <div class="test-name">test_password_field_visible</div>
+        <div class="test-desc">Password input is rendered, visible, and interactable</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.9s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.80s">
+      <td class="test-id">TC-U04</td>
+      <td>
+        <div class="test-name">test_password_field_is_masked</div>
+        <div class="test-desc">Password field has type="password" — input text is masked</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.7s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.83s">
+      <td class="test-id">TC-U05</td>
+      <td>
+        <div class="test-name">test_login_button_visible</div>
+        <div class="test-desc">Login button is displayed and enabled for click interaction</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.8s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.86s">
+      <td class="test-id">TC-U06</td>
+      <td>
+        <div class="test-name">test_login_button_label</div>
+        <div class="test-desc">Login button value attribute equals "Login" (case-insensitive)</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.7s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.89s">
+      <td class="test-id">TC-U07</td>
+      <td>
+        <div class="test-name">test_username_placeholder</div>
+        <div class="test-desc">Username field has a non-empty placeholder attribute</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.7s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+    <tr class="test-row" data-status="pass" data-category="ui" style="animation-delay:0.92s">
+      <td class="test-id">TC-U08</td>
+      <td>
+        <div class="test-name">test_password_placeholder</div>
+        <div class="test-desc">Password field has a non-empty placeholder attribute</div>
+      </td>
+      <td><span class="test-category cat-ui">UI</span></td>
+      <td class="test-duration">0.7s</td>
+      <td><span class="status-badge status-pass">✓ PASS</span></td>
+    </tr>
+
+  </tbody>
+  </table>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    Prodigy Infotech &nbsp;·&nbsp; Task-03 Login Automation &nbsp;·&nbsp; Feb 22, 2026 &nbsp;·&nbsp;
+    <span>27/30 tests passed</span>
+  </footer>
+
+</div><!-- /container -->
+
+<script>
+  function filterTests(type, btn) {
+    // Update active button
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const rows = document.querySelectorAll('.test-row');
+
+    rows.forEach(row => {
+      const status = row.dataset.status;
+      const category = row.dataset.category;
+
+      let show = false;
+
+      if (type === 'all') show = true;
+      else if (type === 'pass' && status === 'pass') show = true;
+      else if (type === 'fail' && status === 'fail') show = true;
+      else if (type === 'positive' && category === 'positive') show = true;
+      else if (type === 'negative' && category === 'negative') show = true;
+      else if (type === 'ui' && category === 'ui') show = true;
+      else if (type === 'security' && category === 'security') show = true;
+
+      row.style.display = show ? '' : 'none';
+    });
+  }
+</script>
+</body>
+</html>
